@@ -16,3 +16,9 @@ venv/
 
 # Misc
 .DS_Store
+
+# Folder 
+logs
+supervised_model
+unsupervised_model
+src/qa/huggingface_cache

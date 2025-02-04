@@ -1,4 +1,4 @@
-# src/pipeline.py
+# src/pipeline/pipeline.py
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -8,8 +8,8 @@ from scrapy.utils.project import get_project_settings
 import json
 
 from scraper.spider import BookSpider
-from data_handler import BookDataHandler
-from data_processor import BookDataProcessor
+from processing.data_handler import BookDataHandler
+from processing.data_processor import BookDataProcessor
 
 
 class BookScrapingPipeline:

@@ -1,7 +1,7 @@
 # src/run_scraper.py
 import asyncio
 import logging
-from pipeline import BookScrapingPipeline
+from pipeline.pipeline import BookScrapingPipeline
 from twisted.internet import reactor, defer
 
 def run_spider():
