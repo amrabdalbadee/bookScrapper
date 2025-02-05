@@ -10,6 +10,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from qa.rule_based_qa import RuleBasedQA
 from qa.llm_qa import LocalLLMQuestionAnswering
 from qa.rag_qa import RAGBookQASystem
+from qa.Gemini_qa import GeminiQA
+
+gemini_key = "AIzaSyBYWae9t_15c135GITaDRR5UOYyj0OliT0"
 
 class QAPipeline:
     def __init__(
@@ -22,7 +25,7 @@ class QAPipeline:
         
         Args:
             data_path (str): Path to the book data CSV
-            method (str): QA method to use ('rule_based', 'unsupervised', 'supervised')
+            method (str): QA method to use ('rule_based', 'unsupervised', 'supervised', 'rag')
         """
         self.data_path = data_path
         self.method = method
@@ -30,6 +33,8 @@ class QAPipeline:
         # Initialize QA systems
         self.rule_based_qa = RuleBasedQA(data_path)
         self.llm_qa = LocalLLMQuestionAnswering(data_path)
+        self.rag_qa = RAGBookQASystem(data_path)  # Initialize the RAG system
+        self.gemini = GeminiQA(data_path, gemini_key)
         
         # Cached models to avoid repeated training
         self.unsupervised_model = None
@@ -87,7 +92,10 @@ class QAPipeline:
                 )
             
             elif self.method == "rag":
-                results = self.rag_qa.answer_query(query)
+                results["answer"] = self.rag_qa.answer_query(query)
+            
+            elif self.method == 'gemini':
+                results["answer"] = self.gemini.run_query(query)
             
             else:
                 raise ValueError(f"Invalid method: {self.method}")
@@ -117,7 +125,7 @@ def main():
     parser = argparse.ArgumentParser(description="Book QA Pipeline")
     parser.add_argument(
         "--method", 
-        choices=["rule_based", "unsupervised", "supervised"], 
+        choices=["rule_based", "unsupervised", "supervised", "rag", "gemini"], 
         default="rule_based",
         help="QA method to use"
     )
@@ -162,11 +170,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# # Single query with rule-based method
-# python run_qa.py --query "Are there books in the Horror category priced below £90?"
-
-# # Batch queries with unsupervised LLM
-# python run_qa.py --method unsupervised --query-file queries.txt
-
