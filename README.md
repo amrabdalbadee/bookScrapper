@@ -39,7 +39,7 @@ python src/pipeline/run_scraper.py
 python src/pipeline/run_qa.py --query "What are mystery books under $20?" --method rule_based
 
 # Launch Streamlit app
-streamlit run app/streamlit_app.py
+streamlit run app/app.py
 ```
 
 ## Project Structure
@@ -51,8 +51,8 @@ streamlit run app/streamlit_app.py
 │   ├── qa/           # Question answering systems
 │   └── pipeline/     # Integration pipelines
 ├── app/
-│   ├── streamlit_app.py
-│   └── hf_spaces_app.py
+│   ├── app.py #streamlit app
+│   └── hf_app.py #huggingface spaces app
 ├── data/             # Data storage
 └── docs/             # Documentation
 ```
