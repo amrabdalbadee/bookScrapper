@@ -82,18 +82,9 @@ def main():
     st.sidebar.header("Query Settings")
     qa_method = st.sidebar.selectbox(
         "Select QA Method",
-        ["Rule-Based", "Unsupervised LLM", "Supervised LLM", "RAG"],
+        ["Rule-Based", "Unsupervised LLM", "Supervised LLM", "RAG", "GEMINI"],
         index=0
     )
-    
-    # Initialize QA Pipeline
-    method_map = {
-        "Rule-Based": "rule_based",
-        "Unsupervised LLM": "unsupervised", 
-        "Supervised LLM": "supervised",
-        "RAG": "rag"
-    }
-    pipeline = QAPipeline(method=method_map[qa_method])
     
     # Suggested Queries Section
     st.sidebar.header("Suggested Queries")
@@ -113,46 +104,60 @@ def main():
         value=st.session_state.get("user_query", "")
     )
     
-    # Query Processing
-    if st.button("Get Answer"):
-        if user_query:
-            # Progress Indicators
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+    # Submit Button
+    submit_button = st.button("Submit Query")
+    
+    # Initialize QA Pipeline only when the method and query are selected
+    if user_query and submit_button:
+        method_map = {
+            "Rule-Based": "rule_based",
+            "Unsupervised LLM": "unsupervised", 
+            "Supervised LLM": "supervised",
+            "RAG": "rag",
+            "GEMINI": "gemini"
+        }
+        
+        pipeline = QAPipeline(method=method_map[qa_method])
+        
+        # Progress Indicators
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        try:
+            # Time the query
+            start_time = time.time()
             
-            try:
-                # Time the query
-                start_time = time.time()
-                
-                # Simulate progress
-                for i in range(100):
-                    progress_bar.progress(i + 1)
-                    time.sleep(0.01)
-                
-                # Process Query
-                status_text.text("Processing query...")
-                result = pipeline.answer_query(user_query)
-                
-                # Compute time taken
-                end_time = time.time()
-                time_taken = round(end_time - start_time, 2)
-                
-                # Display Results
-                st.success("Query Processed Successfully!")
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Method Used", result['method'].capitalize())
-                with col2:
-                    st.metric("Time Taken", f"{time_taken} seconds")
-                
-                st.subheader("Answer")
-                st.info(result.get('answer', 'No answer could be generated.'))
-                
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
-        else:
-            st.warning("Please enter a query.")
+            # Simulate progress
+            for i in range(100):
+                progress_bar.progress(i + 1)
+                time.sleep(0.01)
+            
+            # Process Query
+            status_text.text("Processing query...")
+            result = pipeline.answer_query(user_query)
+            
+            # Compute time taken
+            end_time = time.time()
+            time_taken = round(end_time - start_time, 2)
+            
+            # Display Results
+            st.success("Query Processed Successfully!")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Method Used", result['method'].capitalize())
+            with col2:
+                st.metric("Time Taken", f"{time_taken} seconds")
+            
+            st.subheader("Answer")
+            st.info(result.get('answer', 'No answer could be generated.'))
+            
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
+    elif not submit_button:
+        st.warning("Please click the 'Submit Query' button to get the answer.")
+    else:
+        st.warning("Please enter a query.")
 
 if __name__ == "__main__":
     main()

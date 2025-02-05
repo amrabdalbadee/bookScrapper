@@ -49,3 +49,6 @@
 - Explore larger, more advanced models
 - Implement more robust preprocessing
 - Consider cloud-based or distributed computing
+
+## Production
+- The solution is not ready yet for production, as some models needs to be further explored. and streamlit app can be further optimized to run queries faster. 
