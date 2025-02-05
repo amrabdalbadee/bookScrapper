@@ -27,9 +27,6 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Set up environment variables
-cp .env.example .env
-# Add your API keys to .env
 ```
 
 ## Quick Start
