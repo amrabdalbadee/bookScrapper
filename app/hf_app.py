@@ -4,16 +4,18 @@ import os
 import sys
 from typing import Dict, Any
 
-# Hugging Face specific imports
-from huggingface_hub import HfApi, HfFolder
-
-# Add parent directory to sys.path
+# Add parent directory to sys.path if needed (ensure this matches your folder structure)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.pipeline.run_qa import QAPipeline
 
 def load_suggested_queries() -> Dict[str, list]:
-    """Predefined set of suggested queries for different question types."""
+    """
+    Predefined set of suggested queries for different question types.
+    
+    Returns:
+        Dict of query categories and their example queries
+    """
     return {
         "Categorical Questions": [
             "Are there any books in the 'Travel' category that are marked as Out of stock?",
@@ -35,64 +37,39 @@ def load_suggested_queries() -> Dict[str, list]:
         ]
     }
 
-def setup_huggingface_page():
-    """Configure Hugging Face Spaces Streamlit page settings."""
+def setup_streamlit_page():
+    """Configure Streamlit page settings."""
     st.set_page_config(
         page_title="Book QA Intelligence",
         page_icon="📚",
         layout="wide",
         initial_sidebar_state="expanded"
     )
-    
-    # Hugging Face specific styling
-    st.markdown("""
-    <style>
-    .stApp {
-        background-color: #f4f4f4;
-        font-family: 'Hugging Face', sans-serif;
-    }
-    .stTextInput > div > div > input {
-        border: 2px solid #FF6D37;
-        border-radius: 10px;
-    }
-    .stButton > button {
-        background-color: #FF6D37;
-        color: white;
-        border-radius: 10px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
 def main():
-    # Setup Hugging Face page
-    setup_huggingface_page()
+    # Setup Streamlit page
+    setup_streamlit_page()
     
-    # Hugging Face Spaces Header
-    st.title("🤗 Book QA Intelligence on Hugging Face")
+    # Header and Introduction
+    st.title("📚 Book QA Intelligence")
     st.markdown("""
-    ### AI-Powered Book Dataset Query System
-    Explore book insights using advanced question-answering techniques.
+    ### Intelligent Book Dataset Query System
+    
+    Explore and extract insights from our comprehensive book dataset using 
+    advanced AI-powered question answering techniques. Choose from multiple 
+    intelligent methods to get precise answers to your queries.
     """)
     
     # Sidebar for Method Selection
-    st.sidebar.header("Query Configuration")
+    st.sidebar.header("Query Settings")
     qa_method = st.sidebar.selectbox(
         "Select QA Method",
-        ["Rule-Based", "Unsupervised LLM", "Supervised LLM", "RAG"],
+        ["Rule-Based", "Unsupervised LLM", "Supervised LLM", "RAG", "GEMINI"],
         index=0
     )
     
-    # Initialize QA Pipeline
-    method_map = {
-        "Rule-Based": "rule_based",
-        "Unsupervised LLM": "unsupervised", 
-        "Supervised LLM": "supervised",
-        "RAG": "rag"
-    }
-    pipeline = QAPipeline(method=method_map[qa_method])
-    
     # Suggested Queries Section
-    st.sidebar.header("Quick Query Templates")
+    st.sidebar.header("Suggested Queries")
     suggested_queries = load_suggested_queries()
     
     for category, queries in suggested_queries.items():
@@ -102,69 +79,67 @@ def main():
                     st.session_state.user_query = query
     
     # Query Input
-    st.header("Book Dataset Query")
+    st.header("Ask a Question")
     user_query = st.text_input(
-        "Enter your book-related query", 
+        "Enter your query about the book dataset", 
         key="user_query",
         value=st.session_state.get("user_query", "")
     )
     
-    # Query Processing
-    if st.button("Analyze Query"):
-        if user_query:
-            # Progress and Status
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+    # Submit Button
+    submit_button = st.button("Submit Query")
+    
+    # Initialize QA Pipeline only when the method and query are selected
+    if user_query and submit_button:
+        method_map = {
+            "Rule-Based": "rule_based",
+            "Unsupervised LLM": "unsupervised", 
+            "Supervised LLM": "supervised",
+            "RAG": "rag",
+            "GEMINI": "gemini"
+        }
+        
+        pipeline = QAPipeline(method=method_map[qa_method])
+        
+        # Progress Indicators
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        try:
+            # Time the query
+            start_time = time.time()
             
-            try:
-                # Time the query
-                start_time = time.time()
-                
-                # Simulate progress
-                for i in range(100):
-                    progress_bar.progress(i + 1)
-                    time.sleep(0.01)
-                
-                # Process Query
-                status_text.text("Analyzing query...")
-                result = pipeline.answer_query(user_query)
-                
-                # Compute time taken
-                end_time = time.time()
-                time_taken = round(end_time - start_time, 2)
-                
-                # Display Results
-                st.success("Query Processed Successfully!")
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Analysis Method", result['method'].capitalize())
-                with col2:
-                    st.metric("Processing Time", f"{time_taken} seconds")
-                
-                st.subheader("Insights")
-                st.info(result.get('answer', 'No insights generated.'))
-                
-            except Exception as e:
-                st.error(f"Analysis Error: {str(e)}")
-        else:
-            st.warning("Please provide a query about the book dataset.")
+            # Simulate progress
+            for i in range(100):
+                progress_bar.progress(i + 1)
+                time.sleep(0.01)
+            
+            # Process Query
+            status_text.text("Processing query...")
+            result = pipeline.answer_query(user_query)
+            
+            # Compute time taken
+            end_time = time.time()
+            time_taken = round(end_time - start_time, 2)
+            
+            # Display Results
+            st.success("Query Processed Successfully!")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Method Used", result['method'].capitalize())
+            with col2:
+                st.metric("Time Taken", f"{time_taken} seconds")
+            
+            st.subheader("Answer")
+            st.info(result.get('answer', 'No answer could be generated.'))
+            
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
+    elif not submit_button:
+        st.warning("Please click the 'Submit Query' button to get the answer.")
+    else:
+        st.warning("Please enter a query.")
 
 if __name__ == "__main__":
     main()
-
-# Optional: Hugging Face Space Deployment Configuration
-def get_space_config():
-    """Generate Hugging Face Spaces configuration."""
-    return {
-        "model_name": "book-qa-intelligence",
-        "hardware": "cpu-basic",
-        "dependencies": [
-            "streamlit",
-            "torch",
-            "transformers",
-            "sentence-transformers",
-            "pandas"
-        ],
-        "license": "Apache-2.0"
-    }
