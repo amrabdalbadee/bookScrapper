@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional
 from contextlib import contextmanager
 import time
 from src.processing.data_handler import BookDataHandler
+import warnings
+warnings.simplefilter("ignore")
 
 class TimeoutException(Exception):
     pass

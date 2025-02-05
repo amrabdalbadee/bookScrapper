@@ -15,6 +15,10 @@ from typing import Dict, Any
 import os
 import transformers
 
+import warnings
+warnings.simplefilter("ignore")
+
+
 # Specify a local cache directory
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "huggingface_cache")
 
@@ -63,7 +67,8 @@ class RuleBasedQA:
             top_p=0.95,
             num_return_sequences=1,
             eos_token_id=tokenizer.eos_token_id,
-            max_length=200
+            max_length=200,
+            truncation=True
             )
 
 
